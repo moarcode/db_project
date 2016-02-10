@@ -6,8 +6,11 @@ kody odpowiedzi HTTP, przeslanych bajtow oraz procentowego stosunku do calego ru
 
 ## Dodatkowe informacje
 Przedstawione przykladowe wykresy pochodza z bazy danych stworzonej na podstawie logow z jednego dnia.
-Import logow do bazy MySQL wykonalem autorskim skryptem wykorzystujac narzedzia do pracy z tekstem
-dostepne w systemie GNU/Linux m.in. cat, awk, grep, paste.
+Import logow do bazy MySQL wykonalem poprzez plik csv sworzony autorskim skryptem wykorzystujac narzedzia 
+do pracy z tekstem dostepne w systemie GNU/Linux m.in. cat, awk, grep, paste.
+### Napotkane problemy
+Podczas importu bazy danych z pliku csv zauwazylem, ze dane dot. czasu i daty nie zostaly poprawnie zapisane.
+Nie moglem sobie poradzic z ta kwestia w sensownym czasie.
 
 ## Struktura bazy danych
 ```
@@ -56,3 +59,5 @@ Opis poszczegolnych przelacznikow:
 oznacza wygenerowanie wykresu typu top-ip z limitem 10 pozycji typem wykresu 'bar' do pliku o nazwie test.svg.
 
 Sciezka zapisu plikow jest zapisana na stale: /var/www.
+
+[site]: https://github.com/moarcode/db_project/blob/master/site.svg
