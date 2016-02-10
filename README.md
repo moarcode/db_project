@@ -45,7 +45,11 @@ Opis poszczegolnych przelacznikow:
                  byte-req                    : Strony z najwieksza iloscia wyslanych danych
                  byte-perc-[ip, req, stat]   : Procentowy udzial bajow w stosunku do calosci ruchu
 ```
+<<<<<<< HEAD
 ### Przykladowe uzycie:
+=======
+## Przykladowe uzycie:
+>>>>>>> 8e5fda80471dfaed04cf15c9fff8bf41d9295b18
 
 ./log_stat.py -q top-ip -c bar -t 10 -o test.svg
 
