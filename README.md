@@ -10,7 +10,7 @@ Import logow do bazy MySQL wykonalem autorskim skryptem wykorzystujac narzedzia 
 dostepne w systemie GNU/Linux m.in. cat, awk, grep, paste.
 
 ## Struktura bazy danych
-
+```
 +-----------------+---------------------+------------------------------------------------------------+-----------------+-----------+--------+
 | var_host        | tms_stamp           | var_request                                                | enu_http_status | int_bytes | int_id |
 +-----------------+---------------------+------------------------------------------------------------+-----------------+-----------+--------+
@@ -25,7 +25,7 @@ dostepne w systemie GNU/Linux m.in. cat, awk, grep, paste.
 | 31.184.238.174  | 0000-00-00 00:00:00 | http://griseofulvinp4.forumcircle.com                      | 200             |      1835 |      9 |
 | 31.184.238.174  | 0000-00-00 00:00:00 | http://gravatar.com/floxin7j                               | 200             |      2045 |     10 |
 +-----------------+---------------------+------------------------------------------------------------+-----------------+-----------+--------+
-
+```
 
 ## Praca z programem
 Program obslugiwany jest z linii polecen, sterowanie odbywa sie
