@@ -1,11 +1,12 @@
 #!/usr/bin/python
 __author__ = 'mpacek'
 
-import mysql.connector
-import pygal
-import sys
-import getopt
-from pygal.style import *
+import mysql.connector          # obsluga bazy
+import sys                      # obsluga kodow wyjscia programu
+import getopt                   # obsluga parametrow
+import pygal                    # biblioteka do generowania wykresow
+from pygal.style import *       # style wykresow
+
 
 def available_queries():
     print ("""
@@ -92,7 +93,7 @@ def gen_chart(dict, title, output, chart):
     _chart.render_to_file('/var/www/%s' % output)
 
 
-
+# Glowna funkcja programu
 if __name__ == "__main__":
     s = DefaultStyle
     # Odczyt argumentow z linii polecen
@@ -117,6 +118,7 @@ if __name__ == "__main__":
     else:
         usage()
         sys.exit(2)
+
     # Generowanie odpowiedniego wykresu
     if query == "top-ip":
         gen_chart(top_count(top_num, "var_host"), "Top IPs conneced to server", output, chart)
