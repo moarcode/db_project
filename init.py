@@ -2,27 +2,32 @@
 __author__ = 'mpacek'
 
 import mysql.connector
-import datetime
 import pygal
 import sys
 import getopt
+from pygal.style import *
 
+def available_queries():
+    print ("""
+             Dostepne zapytania:
+                 top-[ip, req, stat]         : Licznik wystapien IP, stron, statusow HTTP
+                 byte-req                    : Strony z najwieksza iloscia wyslanych danych
+                 byte-perc-[ip, req, stat]   : Procentowy udzial bajow w stosunku do calosci ruchu"""
+             )
 
 def usage():
     print ("""
-    -h --help : Pomoc
-    -q        : Wykonaj query top_ip, http_stat, http_stat_by_ip
-    -c        : Typ wykresu (pie, bar)"""
-    )
+            Skrypt do generowania wykresow na podstawie logow Apache
+                -h --help : Pomoc
+                -q        : Zapytanie
+                -c        : Typ wykresu [pie, pie-hole, half-pie, bar]
+                -t        : Limit wynikow
+                
+                Przykladowe uzycie: ./init.py -q top-ip -c pie -t 10 -o wykres.svg"""
+            )
+    available_queries()
 
-def available_queries():
-    print ("""Dostepne zapytania:
-             top-[ip, req, stat]         : Licznik wystapien IP, stron, statusow HTTP
-             byte-req                    : Strony z najwieksza iloscia wyslanych danych
-             byte-perc-[ip, req, stat]   : Procentowy udzial bajow w stosunku do calosci ruchu"""
-             )
 
-# Odczyt argumentow z linii polecen
 
 # Polaczenie z baza
 cnx = mysql.connector.connect(user='root', password='deska21',
@@ -67,10 +72,18 @@ def perc_bytes_per_var(top_num, v):
 # Generowanie wykresu
 def gen_chart(dict, title, output, chart):
 
+    # Wykres kolowy
     if chart == "pie":
-        _chart = pygal.Pie()
+        _chart = pygal.Pie(style=NeonStyle)
+    # Wykres typu paczek :)
+    if chart == "pie-hole":
+        _chart = pygal.Pie(inner_radius=.4, style=DarkColorizedStyle)
+    # Pol ciasktka :)
+    if chart == "half-pie":
+        _chart = pygal.Pie(half_pie=True, style=TurquoiseStyle)
+    # Wykres slupkowy
     elif chart == "bar":
-        _chart = pygal.Bar()
+        _chart = pygal.Bar(style=DarkGreenStyle)
     for i in dict.iteritems():
         _chart.add(i[0], i[1])
     _chart.title=title
@@ -81,30 +94,30 @@ def gen_chart(dict, title, output, chart):
 
 
 if __name__ == "__main__":
+    s = DefaultStyle
+    # Odczyt argumentow z linii polecen
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hq:t:c:o:")
+        opts, args = getopt.getopt(sys.argv[1:],"hq:t:c:o:s:")
     except getopt.GetoptError:
         usage()
         sys.exit(2)
     if opts:
-        for opt, arg in opts:                #(2)
-            if opt in ("-h", "--help"):      #(3)
+        for opt, arg in opts:                
+            if opt in ("-h", "--help"):      # pomoc
                 usage()                     
                 sys.exit()                  
-            elif opt == '-q':                #(4)
+            elif opt == '-q':                # typ zapytania
                 query = arg
-            elif opt == '-t':                #(4)
+            elif opt == '-t':                # limit wynikow
                 top_num = arg
-            elif opt == '-c':                #(4)
+            elif opt == '-c':                # typ wykresu
                 chart = arg
-            elif opt == '-o':                #(4)
+            elif opt == '-o':                # plik wyjsciowy
                 output = arg
     else:
         usage()
         sys.exit(2)
-
-    #gen_chart(perc_bytes_per_var(top_num, "enu_http_status"), "Top bytes per site" ,output, chart)
-
+    # Generowanie odpowiedniego wykresu
     if query == "top-ip":
         gen_chart(top_count(top_num, "var_host"), "Top IPs conneced to server", output, chart)
     elif query == "top-req":
@@ -120,8 +133,9 @@ if __name__ == "__main__":
     elif query == "byte-perc-stat":
         gen_chart(perc_bytes_per_var(top_num, "var_request"), "Bytes requestes in comparation to HTTP responses", output, chart)
     else:
-        print "Please select proper query"
+        print "Prosze uzyc poprawnego zapytania"
         available_queries()
 
     cursor.close()
     cnx.close()
+    sys.exit(0)
