@@ -56,4 +56,5 @@ oznacza wygenerowanie wykresu typu top-ip z limitem 10 pozycji typem wykresu 'ba
 
 Sciezka zapisu plikow jest zapisana na stale: /var/www.
 
-![site]: https://github.com/moarcode/db_project/blob/master/site.svg "Testowy obrazek"
+![obrazek][site]
+[site]: https://github.com/moarcode/db_project/blob/master/site.svg "Testowy obrazek"
