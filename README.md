@@ -1,4 +1,4 @@
-# Program Log_stat 
+# Program Log_stat v1.1
 
 Program generujacy statystki dla access.log Apache2 pobierajacy dane z bazy MySQL.
 Umozliwia generowanie roznych typow wykresow m.in. dla liczy zapytan do serwera WWW z podzialem na IP,
