@@ -28,7 +28,28 @@ def usage():
             )
     available_queries()
 
-
+# Odczyt argumentow z linii polecen
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"hq:t:c:o:")
+except getopt.GetoptError:
+    usage()
+    sys.exit(2)
+if opts:
+    for opt, arg in opts:                
+        if opt in ("-h", "--help"):      # pomoc
+	    usage()                     
+	    sys.exit()                  
+        elif opt == '-q':                # typ zapytania
+	    query = arg
+        elif opt == '-t':                # limit wynikow
+	    top_num = arg
+        elif opt == '-c':                # typ wykresu
+	    chart = arg
+        elif opt == '-o':                # plik wyjsciowy
+	    output = arg
+else:
+    usage()
+    sys.exit(2)
 
 # Polaczenie z baza
 cnx = mysql.connector.connect(user='root', password='deska21',
@@ -44,31 +65,35 @@ def cons_dict(q):
 
     return dict
 
-# Zliczenie wystapien (var_host, var_request, enu_http_status)
-def top_count(top_num, v):
-    query = (""" select %s as f, count(*) as c
-            from apache_log2 group by f 
-            order by c desc limit %s""" 
-            % (v, top_num)
-            )
-    return cons_dict(query)
+def get_query(top_num, v, q):
+    return cons_dict(q % (v, top_num))
 
-# Zliczenie bajtow dla requestow z ucieciem adresow dluzych niz 20 znakow
-def top_bytes_per_site(top_num):
-    query = (""" select if (CHAR_LENGTH(var_request) > 20, 
-            CONCAT(LEFT(var_request, 20), '...'), var_request), 
-            sum(int_bytes) as sum from apache_log2  group by var_request 
-            order by sum desc limit %s;""" % top_num
-            )
-    return cons_dict(query)
+def get_query_1arg(top_num, q):
+    return cons_dict(q % top_num)
 
-# Procentowy udzial bajtow zgrupowany po :(var_host, var_request, enu_http_status)
-def perc_bytes_per_var(top_num, v):
-    query = (""" select %s as f, sum(int_bytes) / (select sum(int_bytes) 
-                from apache_log2) * 100 as t from apache_log2 group by f
-                order by t desc limit %s""" % (v, top_num)
-                )
-    return cons_dict(query)
+queries = {
+	"bytes_perc":
+		"""select %s as f, sum(int_bytes) / (select sum(int_bytes) from apache_log2) * 100 
+		as t from apache_log2 group by f order by t desc limit %s""",
+	"bytes_perc_by_host": 
+		"""select if (CHAR_LENGTH(var_request) > 20, CONCAT(LEFT(var_request, 20), '...'), 
+		var_request), sum(int_bytes) as sum from apache_log2  group by var_request order by 
+		sum desc limit %s;""",
+	"top": 
+		"""select %s as f, sum(int_bytes) / (select sum(int_bytes) from apache_log2) * 100 
+		as t from apache_log2 group by f order by t desc limit %s"""
+	}
+
+chart_param = {
+	"byte-perc-ip":['var_host', "Bytes per IP according to all bytes requested [%]", queries["bytes_perc"]], 
+	"byte-perc-req":["var_request","Bytes requestes for site / all bytes [%]", queries["bytes_perc"]],
+	"byte-perc-stat":["var_request", "Bytes requestes in comparation to HTTP responses", queries["bytes_perc"]],
+	"top-req":["var_request", "Top sites requested", queries["top"]],
+	"top-ip":["var_host", "Top IPs connected to the server", queries["top"]],
+	"top-stat":["enu_http_status", "Top HTTP responses", queries["top"]],
+	"byte-req":["var_request", "Bytes count per site", queries["bytes_perc_by_host"]]
+	}
+
 
 # Generowanie wykresu
 def gen_chart(dict, title, output, chart):
@@ -95,49 +120,11 @@ def gen_chart(dict, title, output, chart):
 
 # Glowna funkcja programu
 if __name__ == "__main__":
-    s = DefaultStyle
-    # Odczyt argumentow z linii polecen
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],"hq:t:c:o:s:")
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
-    if opts:
-        for opt, arg in opts:                
-            if opt in ("-h", "--help"):      # pomoc
-                usage()                     
-                sys.exit()                  
-            elif opt == '-q':                # typ zapytania
-                query = arg
-            elif opt == '-t':                # limit wynikow
-                top_num = arg
-            elif opt == '-c':                # typ wykresu
-                chart = arg
-            elif opt == '-o':                # plik wyjsciowy
-                output = arg
+    if query == "byte-req":
+        gen_chart(get_query_1arg(top_num, chart_param[query][2]), str(chart_param[query][1]), output, chart)
     else:
-        usage()
-        sys.exit(2)
-
-    # Generowanie odpowiedniego wykresu
-    if query == "top-ip":
-        gen_chart(top_count(top_num, "var_host"), "Top IPs conneced to server", output, chart)
-    elif query == "top-req":
-        gen_chart(top_count(top_num, "var_request"), "Top sites requested", output, chart)
-    elif query == "top-stat":
-        gen_chart(top_count(top_num, "enu_http_status"), "Top HTTP responses", output, chart)
-    elif query == "byte-req":
-        gen_chart(top_bytes_per_site(top_num, "var_request"), "Bytes count per site", output, chart)
-    elif query == "byte-perc-ip":
-        gen_chart(perc_bytes_per_var(top_num, "var_host"), "Bytes per IP according to all bytes requested [%]", output, chart)
-    elif query == "byte-perc-req":
-        gen_chart(perc_bytes_per_var(top_num, "var_request"), "Bytes requestes for site / all bytes [%]", output, chart)
-    elif query == "byte-perc-stat":
-        gen_chart(perc_bytes_per_var(top_num, "var_request"), "Bytes requestes in comparation to HTTP responses", output, chart)
-    else:
-        print "Prosze uzyc poprawnego zapytania"
-        available_queries()
-
+        gen_chart(get_query(top_num, chart_param[query][0], chart_param[query][2]), str(chart_param[query][1]), output, chart)
+	    
     cursor.close()
     cnx.close()
     sys.exit(0)
