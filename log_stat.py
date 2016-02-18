@@ -124,9 +124,11 @@ if __name__ == "__main__":
 
     # Generowanie wykresu
     if query == "byte-req":
-        gen_chart(get_query_1arg(top_num, chart_param[query][2]), str(chart_param[query][1]), output, chart)
+        gen_chart(get_query_1arg(top_num, chart_param[query][2]), 
+		str(chart_param[query][1]), output, chart)
     else:
-        gen_chart(get_query(top_num, chart_param[query][0], chart_param[query][2]), str(chart_param[query][1]), output, chart)
+        gen_chart(get_query(top_num, chart_param[query][0], 
+		chart_param[query][2]), str(chart_param[query][1]), output, chart)
 	    
     cursor.close()
     cnx.close()
